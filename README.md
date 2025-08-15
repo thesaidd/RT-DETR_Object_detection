@@ -1,34 +1,99 @@
-# Gerçek Zamanlı Nesne Algılama ve Yeniden Tanımlama (RT-DETR & Re-ID)
+# RT-DETR + Re-ID Ekran Takip Sistemi
 
-Bu depo, RT-DETR modelini kullanarak gerçek zamanlı nesne algılama ve takibi (tracking) yapan, aynı zamanda nesnelerin yeniden tanımlanmasını (Re-ID) sağlayan Python betikleri içermektedir. Proje, video akışında veya bir görüntüde belirli nesneleri (araba ve insan) tespit edip takip ederken, aynı zamanda bu nesnelerin kimliklerini korumayı amaçlar.
+Bu proje, **RT-DETR** nesne tespit modeli ve **ByteTrack** takip algoritmasını kullanarak ekran görüntüsü üzerinde **araç ve insan tespiti** yapar.  
+Ayrıca geliştirilmiş bir **Re-ID (Tekrar Tanıma)** mekanizması ile aynı nesneleri farklı pozisyonlarda yeniden tanır.
 
 ## 🚀 Özellikler
-- **Gerçek Zamanlı Tespit:** `transformers` kütüphanesi üzerinden RT-DETR modeli ile nesneleri hızla algılama.
-- **Nesne Takibi:** `supervision` kütüphanesi ile algılanan nesneleri takip etme.
-- **Yeniden Tanımlama (Re-ID):** Farklı Re-ID modelleri kullanarak (örneğin `torchreid` veya histogram tabanlı yöntemler) aynı nesnelerin farklı karelerde bile tek bir kimliğe sahip olmasını sağlama.
-- **Çeşitli Kullanım Senaryoları:**
-  - `rtdetr_inference.py`: Tek bir görüntü dosyası üzerinde nesne algılama.
-  - `rtdetr_interface_video.py`: Gerçek zamanlı ekran akışı üzerinde nesne algılama ve takip.
-  - `de_id_rt-detr_video_v*.py`: Gelişmiş yeniden tanımlama ve takip algoritmaları ile nesne kimliğini koruma.
+- **RT-DETR** ile gerçek zamanlı nesne tespiti
+- **ByteTrack** ile nesne takibi
+- **Re-ID** ile tekrar tanıma (konum + görsel özellik)
+- FPS, aktif ID sayısı ve galeri yönetimi
+- Canlı ekran görüntüsü üzerinden çalışma
 
-## ⚙️ Kurulum
-Proje, PyTorch ve çeşitli Python kütüphanelerini kullanmaktadır. Sanal bir ortamda kurulum yapmanız tavsiye edilir.
+---
 
-### 🔧 Bağımlılıklar
-Aşağıdaki komut ile gerekli kütüphaneleri yükleyebilirsiniz:
+## 📋 Gereksinimler
 
-pip install torch transformers supervision opencv-python mss scikit-learn numpy pillow torchreid
+### Donanım
+- NVIDIA GPU (CUDA destekli) — RTX 2060+ önerilir
+- Minimum 8 GB RAM (16 GB önerilir)
+- Minimum 4 GB GPU Belleği
 
-1. Tek Bir Görüntü Üzerinde Nesne Algılama
-python rtdetr_inference.py
-Bu betik, kullanıcıdan bir görüntü dosyası seçmesini ister ve o görüntüdeki nesneleri tespit edip etiketler.
+### Yazılım
+- Python 3.9 – 3.11 (3.12 önerilmez)
+- Windows / Linux (MacOS’ta sınırlı destek)
+- CUDA Toolkit + cuDNN (GPU kullanımında gerekli)
 
-2. Gerçek Zamanlı Ekran Kaydı ile Nesne Takibi
+---
 
-python rtdetr_interface_video.py
-Bu betik, ekranınızın belirli bir alanını yakalar ve gerçek zamanlı olarak nesneleri algılayıp takip eder.
+## 🔧 Kurulum
 
-3. Gerçek Zamanlı Yeniden Tanımlama (Re-ID)
+### 1. Depoyu Klonla veya Dosyaları İndir
+```bash
+git clone https://github.com/kullanici_adi/rtdetr-reid.git
+cd rtdetr-reid
 
-python de_id_rt-detr_video_v4.py
-Bu betik, algılanan nesnelere kalıcı kimlikler atar. Çıkmak için 'q' tuşuna basın.
+
+2. Gerekli Kütüphaneleri Yükle
+
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install opencv-python supervision mss numpy scikit-learn transformers
+
+Çalıştırma
+
+python rtdetr_reid.py
+
+
+Çalıştırıldığında:
+
+Canlı tespit ve takip ekranda gösterilir
+
+Sol üstte FPS, ID sayısı ve aktif takip bilgisi bulunur
+
+Konsolda tespit ve tekrar tanıma mesajları yazdırılır
+
+⌨️ Klavye Kısayolları
+Tuş	İşlev
+q	Programı sonlandırır
+g	Konsola mevcut kimlik galerisini yazar
+
+⚠️ Olası Hatalar ve Çözümler
+CUDA error veya Torch not compiled with CUDA
+
+GPU sürücüsü veya CUDA Toolkit doğru kurulmamış olabilir
+
+GPU yoksa kod CPU modunda çalışır ancak FPS düşer
+
+ModuleNotFoundError
+
+Eksik kütüphane varsa yüklemek için:
+
+pip install paket_adi
+
+Siyah ekran / boş pencere
+
+mss yakalama alanı ekran çözünürlüğüyle uyuşmayabilir
+→ Kod içinde:
+
+"width": 1280,
+"height": 720
+
+
+değerlerini kendi çözünürlüğünüze göre ayarlayın.
+
+📈 Performans İpuçları
+
+Yakalama alanını küçültün (FPS artar)
+
+GPU kullanın, CPU’da FPS çok düşük olur
+
+istenen_etiketler listesini daraltın (ör. sadece "car")
+
+📌 Konsol Çıktı Örneği
+🆕 YENİ NESNE! Tracker:2 -> ID:1 car
+🔄 TEKRAR TANIMLAMA! Tracker:4 -> ID:1 car (benzerlik: 0.82)
+📊 MEVCUT KİMLİKLER (Toplam: 3):
+🚗 Arabalar (2 tane):
+   ID:1 - Son pozisyon: (0.45, 0.62)
+🚶 İnsanlar (1 tane):
+   ID:2 - Son pozisyon: (0.32, 0.48)
